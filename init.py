@@ -11,8 +11,7 @@ def create_app():
     app = Flask(__name__)
 
     #initalise config vars into the application
-    #app.secret_key = os.environ["SECRET_KEY"]
-    app.secret_key = "c69d85f0363a218b212cfe3b8f09020f32b554112b7362ad3a831a4fafe3182c"
+    app.secret_key = os.environ["SECRET_KEY"]
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
     app.config["SQLALCHEMY_TRACK_NOTIFICATIONS"] = False
     app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, 'static', 'download_files')
