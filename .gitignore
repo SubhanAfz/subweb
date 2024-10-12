@@ -1,0 +1,10 @@
+__pycache__
+certbot
+instance
+nginx
+static/download_files
+docker-compose.yml
+Dockerfile
+subweb-nginx.tar
+subweb-subweb.tar
+venv/

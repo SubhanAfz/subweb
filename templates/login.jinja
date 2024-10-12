@@ -1,0 +1,19 @@
+{% extends "loginBase.jinja" %}
+
+{% block title %}Login{% endblock %}
+
+{% block URL %}/signup{% endblock %}
+
+{% block registerOrLogin %}Register{% endblock %}
+
+{% block form %}
+
+    <form action="/login" method="post">
+        <ul>
+            <li><input type="text" name="username" placeholder="username" class=""></li>
+            <li><input type="password" name="password" placeholder="password"></li>
+            <li><input type="submit" value="login"></li>
+        </ul>
+    </form>
+
+{% endblock %} 

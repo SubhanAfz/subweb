@@ -1,0 +1,24 @@
+body{
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #121212;
+    color:#ffffff;
+    text-align: center;
+}
+
+a{
+    text-decoration: none;
+    color: #FFFFFFFF;
+}
+
+.links:hover{
+    color:#404040;
+}
+
+ul{
+    list-style-type: none;
+    padding: 0;
+}
+#error{
+    color:red;
+}

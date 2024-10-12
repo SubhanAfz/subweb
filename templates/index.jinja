@@ -1,0 +1,127 @@
+{% extends "base.jinja" %}
+
+{% block head%}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css')}}">
+{%endblock%}
+
+{% block content %}
+    <h2> Hello world </h2>
+
+    <p> Welcome to my website </p>
+
+    {%if loggedIn == false%}
+        <a href="/login" class="links">Login</a> | <a href="/signup" class="links">Register</a>
+    {%elif loggedIn == true%}
+        <b>Logged in as {{username}}</b> | <a href="/logout" class="links">Logout</a>
+    {%endif%}
+    <br>
+    <br>
+
+    <h3>Contacts</h3>
+
+    <ul>
+        <li><a href="https://github.com/SubhanAfz"><img src="{{url_for('static', filename='images/github.svg')}}" alt="my github" class="image-icon"></a></li>
+        <li><a href="#" id="discord"><img src="{{url_for('static', filename='images/discord.svg')}}" alt="Discord" class="image-icon"></a></li>
+        <li><a href="mailto:subhanafzal125@gmail.com"><img src="{{url_for('static', filename='images/email.svg')}}" alt="my email" class="image-icon"></a></li>
+    </ul>
+
+    <script>
+        const link = document.getElementById("discord")
+        link.addEventListener("click", function(e){
+            e.preventDefault();
+            alert("username: subhanafz")
+        });
+    </script>
+    
+    
+    
+    <h3> My public projects ({{public_project_count}}): </h3>
+    <ul>
+        {% for k,v in projects.items()%}
+            {% if v.private == false%}
+                <li>
+                {% set project_title = v.title %}
+                {% set project_description = v.description %}
+                {% set project_link = v.download_link%}
+                {% include "card.jinja" %}
+                </li>
+            {% endif %}
+        {%endfor%}  
+    </ul>
+
+    <h3> My private projects ({{projects|length - public_project_count}}): </h3>
+
+    
+
+    <ul>
+        {%if loggedIn == true and role > -1%}
+            {% for k,v in projects.items()%}
+                {% if v.private == true and role >= v.role%}
+                    <li>
+                    {% set project_title = v.title %}
+                    {% set project_description = v.description %}
+                    {% set project_link = v.download_link%}
+                    {% include "card.jinja" %}
+                    </li>
+                {% endif %}
+            {%endfor%}
+        {%endif%}
+    </ul>
+
+    {%if loggedIn == false%}
+        <p id="error"> to view private projects you must log in! </p>
+    {%elif amount_able_to_view != projects|length - public_project_count %}
+        <p id="error"> some private projects are hidden! </p>
+    {%endif%}
+
+    {%if loggedIn== true and role >99%}
+        <br>
+        <br>
+        <br>
+        <h3>Admin dashboard</h3>
+        
+        <b>SQLite db</b>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Role</th>
+            </tr>
+            {% for user in users%}
+                <tr>
+                    <td>{{user.id}}</td>
+                    <td>{{user.username}}</td>
+                    <td>{{user.password}}</td>
+                    <td>{{user.role}}</td>
+                </tr>
+            {%endfor%}
+
+        </table>
+
+        
+        change role of user
+        <form action="/api/changeRole" method="post">
+            <input type="number" name="id" placeholder="ID">
+            <input type="number" name="role" placeholder="role">
+            <input type="submit" value="submit">
+        </form>
+
+
+        delete user
+        <form action="/api/deleteUser" method="post">
+            <input type="number" name="id" placeholder="ID">
+            <input type="submit" value="submit">
+        </form>
+        <button id="wakeButton">Wake PC</button>
+
+        <script>
+            document.getElementById("wakeButton").addEventListener('click', function(){
+                fetch('/api/wake', {
+                    method: "POST"
+                })
+                alert("sent wake to pico!")
+            });
+        </script>
+    {%endif%}
+{% endblock %}  
