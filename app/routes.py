@@ -105,8 +105,8 @@ def deleteUser():
 def wake():
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
-        if user.role > 99:
-            resp = requests.get("http://server-pico_server:5000/wake")
+        if user.role > 0:
+            resp = requests.post(f"http://server-pico_server:5000/wake/{session["username"]}")
             if resp.ok:
                 return "OK"
     return redirect(url_for("main.index"))
