@@ -2,11 +2,13 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from init import db
 from models import User
 from utils import get_project_from_filename, load_projects
+import yt_dlp
 import os
 import requests
 
 main_bp = Blueprint('main', __name__)
 api_bp = Blueprint('api', __name__)
+yt_dl_bp = Blueprint('yt_dl', __name__, url_prefix='/yt_dl')
 
 @main_bp.route("/")
 def index():
@@ -33,19 +35,6 @@ def login():
         if user and user.check_password(password):
             session["sessionID"], session["username"] = user.id, username
             return redirect(url_for("main.index"))
-        return render_template("login.jinja", title="login", error="Invalid username or password!")
-    
-    return render_template("login.jinja", title="login", error="")
-
-# Signup route
-@main_bp.route("/signup", methods=["POST", "GET"])
-def signup():
-    if request.method == "POST":
-        username, password = request.form["username"], request.form["password"]
-        if User.query.filter_by(username=username).first():
-            return render_template("signup.jinja", title="signup", error="Username already exists!")
-        
-        new_user = User(username=username)
         new_user.set_password(password)
         new_user.role = 0
         db.session.add(new_user)
@@ -90,23 +79,54 @@ def changeRole():
                 db.session.commit()
     return redirect(url_for("main.index"))
 
-@api_bp.route("/api/deleteUser", methods=["POST"])
-def deleteUser():
-    if "username" in session:
-        user = User.query.filter_by(username=session["username"]).first()
-        if user.role > 99:
-            user_to_delete = User.query.get(request.form["id"])
-            if user_to_delete:
-                db.session.delete(user_to_delete)
-                db.session.commit()
-    return redirect(url_for("main.index"))
 
 @api_bp.route("/api/wake", methods=["POST"])
 def wake():
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
-        if user.role > 0:
-            resp = requests.post(f"http://server-pico_server:5000/wake/{session["username"]}")
+        if user.role > -1:
+            resp = requests.post(f"http://server-pico_server:5000/wake/{session['username']}")
             if resp.ok:
                 return "OK"
     return redirect(url_for("main.index"))
+
+
+
+@yt_dl_bp.route("/", methods=["GET"])
+def index():
+    if "username" in session:
+        user = User.query.filter_by(username=session["username"]).first()
+        if user.role <= -1:
+            return redirect(url_for("main.index"))
+    return render_template("youtube.jinja", title="Youtube Downloader")
+
+
+@yt_dl_bp.route("/ytdownload/", methods =["POST"])
+def youtube_downloader():
+    if "username" in session:
+        user = User.query.filter_by(username=session["username"]).first()
+        if user.role <= -1:
+            return redirect(url_for("main.index"))
+
+    yt_link = request.form["yt_link"]
+    try:
+        ydl_ops = {
+            'format' : 'bestvideo[height<=1080]+bestaudio/best[height<=1080]',
+            'merge_output_format' : 'mp4',
+            'outtmp1': "downloaded_video.mp4",
+            'postprocessors' : [{
+                'key' : 'FFmpegVideoConverter',
+                'preferredformat': 'mp4'
+            }]
+        }
+        with yt_dlp.YoutubeDL(ydl_ops) as ydl:
+            ydl.download(yt_link)
+    except:
+        return redirect(url_for("yt_dl.index"))
+
+    return redirect(url_for("yt_dl.index"))
+
+
+
+
+
