@@ -2,8 +2,12 @@ __pycache__
 certbot
 subweb-nginx.tar
 subweb-subweb.tar
-venv/
 .env
+bin/
+lib/
+lib64/
+share/
+venv/
 app/static/download_files
 app/instance
 instance/users.db
