@@ -103,6 +103,16 @@ def wake():
     return redirect(url_for("main.index"))
 
 
+@api_bp.route("/api/deleteUser", methods=["POST"])
+def deleteUser():
+    if "username" in session:
+        user = User.query.filter_by(username=session["username"]).first()
+        if user.role > 99:
+            user_to_delete = User.query.get(request.form["id"])
+            if user_to_delete:
+                db.session.delete(user_to_delete)
+                db.session.commit()
+    return redirect(url_for("main.index"))
 
 @yt_dl_bp.route("/", methods=["GET"])
 def index():
