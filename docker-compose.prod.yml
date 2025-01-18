@@ -1,0 +1,45 @@
+services:
+  subweb:
+    build: ./app
+    volumes:
+    - ./instance:/app/instance
+    - ./static/download_files:/app/static/download_files
+    expose:
+    - "8000"
+    command: gunicorn -w 4 -b 0.0.0.0:8000 main:app
+    restart: "always"
+    env_file:
+      - .env
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf/:/etc/letsencrypt
+      - ./certbot/www/:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - subweb
+    restart: "always"
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certbot/conf/:/etc/letsencrypt
+      - ./certbot/www/:/var/www/certbot
+    depends_on:
+      - subweb
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email subhanafzal125@gmail.com -d subhan.work --agree-tos
+  server-pico_server:
+    image: server-pico_server
+    expose:
+      - "5000"
+    ports:
+      - "6000:6000"
+    depends_on:
+      - subweb
+    restart: "always"
+    command: python server.py
+    
+

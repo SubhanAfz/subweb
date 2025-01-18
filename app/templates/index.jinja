@@ -21,17 +21,9 @@
 
     <ul>
         <li><a href="https://github.com/SubhanAfz"><img src="{{url_for('static', filename='images/github.svg')}}" alt="my github" class="image-icon"></a></li>
-        <li><a href="#" id="discord"><img src="{{url_for('static', filename='images/discord.svg')}}" alt="Discord" class="image-icon"></a></li>
-        <li><a href="mailto:subhanafzal125@gmail.com"><img src="{{url_for('static', filename='images/email.svg')}}" alt="my email" class="image-icon"></a></li>
+        <li><a href="mailto:subhan@subhan.work"><img src="{{url_for('static', filename='images/email.svg')}}" alt="my email" class="image-icon"></a></li>
     </ul>
 
-    <script>
-        const link = document.getElementById("discord")
-        link.addEventListener("click", function(e){
-            e.preventDefault();
-            alert("username: subhanafz")
-        });
-    </script>
     
     
     
@@ -48,9 +40,9 @@
             {% endif %}
         {%endfor%}  
     </ul>
-
-    <h3> My private projects ({{projects|length - public_project_count}}): </h3>
-
+    {%if loggedIn == true and role > -1%}
+        <h3> My private projects ({{projects|length - public_project_count}}): </h3>
+    {%endif%}
     
 
     <ul>
