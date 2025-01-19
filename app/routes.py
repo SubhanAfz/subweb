@@ -147,8 +147,3 @@ def youtube_downloader():
         return redirect(url_for("yt_dl.index"))
 
     return redirect(url_for("yt_dl.index"))
-
-
-
-
-
