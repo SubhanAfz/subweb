@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, request, session, redirect, url_fo
 from init import db
 from models import User
 from utils import get_project_from_filename, load_projects
-import yt_dlp
 import os
 import requests
 
@@ -122,28 +121,3 @@ def index():
             return redirect(url_for("main.index"))
     return render_template("youtube.jinja", title="Youtube Downloader")
 
-
-@yt_dl_bp.route("/ytdownload/", methods =["POST"])
-def youtube_downloader():
-    if "username" in session:
-        user = User.query.filter_by(username=session["username"]).first()
-        if user.role <= -1:
-            return redirect(url_for("main.index"))
-
-    yt_link = request.form["yt_link"]
-    try:
-        ydl_ops = {
-            'format' : 'bestvideo[height<=1080]+bestaudio/best[height<=1080]',
-            'merge_output_format' : 'mp4',
-            'outtmp1': "downloaded_video.mp4",
-            'postprocessors' : [{
-                'key' : 'FFmpegVideoConverter',
-                'preferredformat': 'mp4'
-            }]
-        }
-        with yt_dlp.YoutubeDL(ydl_ops) as ydl:
-            ydl.download(yt_link)
-    except:
-        return redirect(url_for("yt_dl.index"))
-
-    return redirect(url_for("yt_dl.index"))
