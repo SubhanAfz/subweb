@@ -25,6 +25,7 @@ def index():
                            username=session.get("username", ""), role=role, 
                            users=users, amount_able_to_view=amount_able_to_view)
 
+
 # Login route
 @main_bp.route("/login", methods=["POST", "GET"])
 def login():
@@ -36,6 +37,7 @@ def login():
             return redirect(url_for("main.index"))
         return render_template("login.jinja", title="login", error="Invalid username or password!")
     return render_template("login.jinja", title="login", error="")
+
 
 # Signup route
 @main_bp.route("/signup", methods=["POST", "GET"])
@@ -55,11 +57,13 @@ def signup():
     
     return render_template("signup.jinja", title="signup")
 
+
 # Logout route
 @main_bp.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("main.index"))
+
 
 # Download route
 @main_bp.route("/download/<file>")
@@ -77,6 +81,7 @@ def download(file):
             abort(404)
     
     return redirect(url_for("main.index"))
+
 
 # API routes for admin actions
 @api_bp.route("/api/changeRole", methods=["POST"])
@@ -112,6 +117,7 @@ def deleteUser():
                 db.session.delete(user_to_delete)
                 db.session.commit()
     return redirect(url_for("main.index"))
+
 
 @yt_dl_bp.route("/", methods=["GET"])
 def index():

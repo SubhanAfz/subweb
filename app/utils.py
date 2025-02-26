@@ -7,6 +7,7 @@ def get_project_from_filename(file, projects):
         if project["download_link"] == f"/download/{file}":
             return project
         
+           
 def load_projects():
     with open(current_app.config["PROJECTS_JSON_FILE"], "r") as data:
         return json.load(data)
