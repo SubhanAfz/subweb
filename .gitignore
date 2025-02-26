@@ -12,4 +12,3 @@ app/static/download_files
 app/instance
 instance/users.db
 .DS_Store
-app/.DS_Store
