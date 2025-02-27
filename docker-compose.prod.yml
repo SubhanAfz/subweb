@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
   nginx:
-    image: subhanafz/subweb-nginx:latest
+    image: nginx
     volumes:
       - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
       - ./certbot/conf/:/etc/letsencrypt
