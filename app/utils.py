@@ -1,4 +1,4 @@
-# pylint: disable=cyclic-import
+# pylint: disable=cyclic-import,R0401
 """Utility functions for project management in the application."""
 
 import json
