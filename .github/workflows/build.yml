@@ -16,13 +16,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Build Docker Images
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      - name: Build Docker Images & Push to Docker Hub
         run: |
-            docker build ./app/ --platform linux/amd64,linux/arm64 -t subhanafz/subweb:latest
-      - name: Push Docker Image to DockerHub
-        run: |
-            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-            docker push subhanafz/subweb:latest
+            docker buildx build --platform linux/amd64,linux/arm64 -t subhanafz/subweb:latest --push ./app/
   deploy:
     runs-on: ubuntu-latest
     needs: build
