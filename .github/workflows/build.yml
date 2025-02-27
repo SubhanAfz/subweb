@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Build Docker Image
+      - name: Build Docker Images
         run: |
             docker build ./app/ -t subhanafz/subweb:latest
             docker build ./nginx/ -t subhanafz/subweb-nginx:latest
