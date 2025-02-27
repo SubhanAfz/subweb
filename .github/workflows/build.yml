@@ -1,4 +1,4 @@
-name: Build & Push Docker image
+name: Build, Push Docker image and Deploy via Tailscale to web server.
 
 on:
     push:
@@ -19,13 +19,26 @@ jobs:
       - name: Build Docker Images
         run: |
             docker build ./app/ -t subhanafz/subweb:latest
-            docker build ./nginx/ -t subhanafz/subweb-nginx:latest
       - name: Push Docker Image to DockerHub
         run: |
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             docker push subhanafz/subweb:latest
-            docker push subhanafz/subweb-nginx:latest
-            
-
-        
-        
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Install Tailscale & Connect to Tailnet
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Deploy to Web Server
+        run: |
+            ssh -o "StrictHostKeyChecking=no" ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "
+                cd ~/subweb
+                git pull
+                docker compose down
+                docker compose pull -f docker-compose.prod.yml
+                docker compose up -f docker-compose.prod.yml -d
+            "
