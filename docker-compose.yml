@@ -1,6 +1,6 @@
 services:
   subweb:
-    image: subhanafz/subweb:latest
+    build: ./app/
     volumes:
     - ./app/instance:/app/instance
     - ./app/static/download_files:/app/static/download_files

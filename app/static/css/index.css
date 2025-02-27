@@ -16,11 +16,6 @@
 .project-card:hover{
     background-color: #404040;
 }
-
-a:not(#subweb-github){
-    width: 100%;
-    height: 100%;
-}
 li{
     display: inline-block;
     justify-content: center;

@@ -25,9 +25,3 @@ ul{
 #error{
     color:red;
 }
-
-#subweb-github{
-    position: fixed;
-    bottom: 0;
-    left: 0;
-}
