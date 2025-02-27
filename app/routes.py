@@ -189,4 +189,3 @@ def delete_user():
                 db.session.delete(user_to_delete)
                 db.session.commit()
     return redirect(url_for("main.index"))
-
