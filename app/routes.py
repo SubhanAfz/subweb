@@ -190,16 +190,3 @@ def delete_user():
                 db.session.commit()
     return redirect(url_for("main.index"))
 
-
-@yt_dl_bp.route("/", methods=["GET"])
-def youtube_index():
-    """
-    Render the YouTube downloader page.
-    
-    Redirects if the user does not have sufficient privileges.
-    """
-    if "username" in session:
-        user = User.query.filter_by(username=session["username"]).first()
-        if user.role <= -1:
-            return redirect(url_for("main.index"))
-    return render_template("youtube.jinja", title="Youtube Downloader")
