@@ -1,0 +1,31 @@
+name: Build & Push Docker image
+
+on:
+    push:
+        branches: ["master"]
+        paths:
+            - "app/**"
+            - "nginx/**"
+
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build Docker Image
+        run: |
+            docker build ./app/ -t subhanafz/subweb:latest
+            docker build ./nginx/ -t subhanafz/subweb-nginx:latest
+      - name: Push Docker Image to DockerHub
+        run: |
+            docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            docker push subhanafz/subweb:latest
+            docker push subhanafz/subweb-nginx:latest
+            
+
+        
+        
