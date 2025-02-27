@@ -18,7 +18,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build Docker Images
         run: |
-            docker build ./app/ -t subhanafz/subweb:latest
+            docker build ./app/ --platform linux/amd64,linux/arm64 -t subhanafz/subweb:latest
       - name: Push Docker Image to DockerHub
         run: |
             docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
@@ -38,7 +38,7 @@ jobs:
             ssh -o "StrictHostKeyChecking=no" ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "
                 cd ~/subweb
                 git pull
-                docker compose down
-                docker compose pull -f docker-compose.prod.yml
-                docker compose up -f docker-compose.prod.yml -d
+                docker compose -f docker-compose.prod.yml down
+                docker compose -f docker-compose.prod.yml pull 
+                docker compose -f docker-compose.prod.yml up -d
             "
