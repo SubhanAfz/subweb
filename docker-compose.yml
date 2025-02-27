@@ -1,6 +1,6 @@
 services:
   subweb:
-    build: ./app
+    image: subhanafz/subweb:latest
     volumes:
     - ./app/instance:/app/instance
     - ./app/static/download_files:/app/static/download_files
@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
   nginx:
-    build: ./nginx
+    image: subhanafz/subweb-nginx:latest
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
     ports:

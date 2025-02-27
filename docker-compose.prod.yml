@@ -1,6 +1,6 @@
 services:
   subweb:
-    build: ./app
+    image: subhanafz/subweb:latest
     volumes:
     - ./instance:/app/instance
     - ./static/download_files:/app/static/download_files
@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
   nginx:
-    build: ./nginx
+    image: subhanafz/subweb-nginx:latest
     volumes:
       - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
       - ./certbot/conf/:/etc/letsencrypt
@@ -31,15 +31,15 @@ services:
     depends_on:
       - subweb
     command: certonly --webroot -w /var/www/certbot --force-renewal --email subhanafzal125@gmail.com -d subhan.work --agree-tos
-  server-pico_server:
-    image: server-pico_server
-    expose:
-      - "5000"
-    ports:
-      - "6000:6000"
-    depends_on:
-      - subweb
-    restart: "always"
-    command: python server.py
+  #server-pico_server:
+  #  image: server-pico_server
+  #  expose:
+  #    - "5000"
+  #    - "6000:6000"
+  #  ports:
+  #  depends_on:
+  #  restart: "always"
+  #    - subweb
+  #  command: python server.py
     
 
