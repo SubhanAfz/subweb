@@ -1,52 +1,98 @@
-from flask import Blueprint, render_template, request, session, redirect, url_for, send_from_directory, abort
-from init import db
-from models import User
-from utils import get_project_from_filename, load_projects
+"""Routes for the subweb application."""
+
 import os
 import requests
 
-main_bp = Blueprint('main', __name__)
-api_bp = Blueprint('api', __name__)
-yt_dl_bp = Blueprint('yt_dl', __name__, url_prefix='/yt_dl')
+from flask import (Blueprint, render_template, request, session, redirect,
+                   url_for, send_from_directory, abort)
+
+from init import db
+from models import User
+from utils import get_project_from_filename, load_projects
+
+main_bp = Blueprint("main", __name__)
+api_bp = Blueprint("api", __name__)
+yt_dl_bp = Blueprint("yt_dl", __name__, url_prefix="/yt_dl")
+
 
 @main_bp.route("/")
 def index():
+    """
+    Render the main page with projects and user data.
+    
+    Loads projects from the JSON file, calculates public and accessible 
+    project counts, and retrieves user info if logged in.
+    """
     projects = load_projects()
-    public_project_count = sum(1 for project in projects.values() if not project["private"])
+    public_project_count = sum(
+        1 for project in projects.values() if not project["private"]
+    )
+    logged_in = "sessionID" in session and "username" in session
+    role = (
+        User.query.filter_by(username=session["username"]).first().role
+        if logged_in
+        else -1
+    )
+    amount_able_to_view = sum(
+        1
+        for project in projects.values()
+        if project["role"] <= role and project["private"]
+    )
+    users = User.query.all() if logged_in else []
 
-    loggedIn = "sessionID" in session and "username" in session
-    role = User.query.filter_by(username=session["username"]).first().role if loggedIn else -1
-    amount_able_to_view = sum(1 for project in projects.values() if project["role"] <= role and project["private"])
+    return render_template(
+        "index.jinja",
+        title="main page",
+        projects=projects,
+        public_project_count=public_project_count,
+        loggedIn=logged_in,  # If template expects 'loggedIn', you might need to keep it.
+        username=session.get("username", ""),
+        role=role,
+        users=users,
+        amount_able_to_view=amount_able_to_view,
+    )
 
-    users = User.query.all() if loggedIn else []
 
-    return render_template("index.jinja", title="main page", projects=projects, 
-                           public_project_count=public_project_count, loggedIn=loggedIn, 
-                           username=session.get("username", ""), role=role, 
-                           users=users, amount_able_to_view=amount_able_to_view)
-
-
-# Login route
 @main_bp.route("/login", methods=["POST", "GET"])
 def login():
+    """
+    Handle user login.
+    
+    On POST, validates credentials and logs in the user. On GET, 
+    renders the login page.
+    """
     if request.method == "POST":
-        username, password = request.form["username"], request.form["password"]
+        username = request.form["username"]
+        password = request.form["password"]
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             session["sessionID"], session["username"] = user.id, username
             return redirect(url_for("main.index"))
-        return render_template("login.jinja", title="login", error="Invalid username or password!")
+        return render_template(
+            "login.jinja",
+            title="login",
+            error="Invalid username or password!"
+        )
     return render_template("login.jinja", title="login", error="")
 
 
-# Signup route
 @main_bp.route("/signup", methods=["POST", "GET"])
 def signup():
+    """
+    Handle user signup.
+    
+    On POST, creates a new user if the username does not exist. On GET, 
+    renders the signup page.
+    """
     if request.method == "POST":
-        username, password = request.form["username"], request.form["password"]
+        username = request.form["username"]
+        password = request.form["password"]
         if User.query.filter_by(username=username).first():
-            return render_template("signup.jinja", title="signup", error="Username already exists!")
-        
+            return render_template(
+                "signup.jinja",
+                title="signup",
+                error="Username already exists!"
+            )
         new_user = User(username=username)
         new_user.set_password(password)
         new_user.role = 0
@@ -54,38 +100,53 @@ def signup():
         db.session.commit()
         session["sessionID"], session["username"] = new_user.id, username
         return redirect(url_for("main.index"))
-    
+
     return render_template("signup.jinja", title="signup")
 
 
-# Logout route
 @main_bp.route("/logout")
 def logout():
+    """
+    Log out the current user and clear the session.
+    """
     session.clear()
     return redirect(url_for("main.index"))
 
 
-# Download route
 @main_bp.route("/download/<file>")
 def download(file):
+    """
+    Handle file download requests.
+    
+    Validates user session and role before allowing the download.
+    """
     projects = load_projects()
     project = get_project_from_filename(file, projects)
 
-    loggedIn = "sessionID" in session and "username" in session
-    role = User.query.filter_by(username=session["username"]).first().role if loggedIn else -1
+    logged_in = "sessionID" in session and "username" in session
+    role = (
+        User.query.filter_by(username=session["username"]).first().role
+        if logged_in
+        else -1
+    )
 
-    if loggedIn and role >= project["role"]:
+    if logged_in and role >= project["role"]:
         try:
-            return send_from_directory(os.path.join('static', 'download_files'), file, as_attachment=True)
+            return send_from_directory(
+                os.path.join("static", "download_files"),
+                file,
+                as_attachment=True
+            )
         except FileNotFoundError:
             abort(404)
-    
     return redirect(url_for("main.index"))
 
 
-# API routes for admin actions
 @api_bp.route("/api/changeRole", methods=["POST"])
-def changeRole():
+def change_role():
+    """
+    Change the role of a specified user if the current user has admin privileges.
+    """
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > 99:
@@ -98,17 +159,28 @@ def changeRole():
 
 @api_bp.route("/api/wake", methods=["POST"])
 def wake():
+    """
+    Send a wake request to the specified service.
+    
+    A timeout is specified to prevent hanging indefinitely.
+    """
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > -1:
-            resp = requests.post(f"http://server-pico_server:5000/wake/{session['username']}")
+            resp = requests.post(
+                f"http://server-pico_server:5000/wake/{session['username']}",
+                timeout=5
+            )
             if resp.ok:
                 return "OK"
     return redirect(url_for("main.index"))
 
 
 @api_bp.route("/api/deleteUser", methods=["POST"])
-def deleteUser():
+def delete_user():
+    """
+    Delete a user if the current user has admin privileges.
+    """
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > 99:
@@ -120,10 +192,14 @@ def deleteUser():
 
 
 @yt_dl_bp.route("/", methods=["GET"])
-def index():
+def youtube_index():
+    """
+    Render the YouTube downloader page.
+    
+    Redirects if the user does not have sufficient privileges.
+    """
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role <= -1:
             return redirect(url_for("main.index"))
     return render_template("youtube.jinja", title="Youtube Downloader")
-
