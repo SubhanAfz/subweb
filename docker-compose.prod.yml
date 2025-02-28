@@ -10,6 +10,8 @@ services:
     restart: "always"
     env_file:
       - .env
+    networks:
+      - public_webserver
   nginx:
     image: nginx
     volumes:
@@ -21,6 +23,8 @@ services:
     depends_on:
       - subweb
     restart: "always"
+    networks:
+      - public_webserver
   certbot:
     image: certbot/dns-cloudflare
     container_name: certbot
@@ -38,4 +42,9 @@ services:
       --non-interactive
       --agree-tos
       --email subhanafzal125@gmail.com
+    networks:
+      - public_webserver
   
+networks:
+  public_webserver:
+    external: true
