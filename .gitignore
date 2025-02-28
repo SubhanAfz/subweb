@@ -12,3 +12,4 @@ app/static/download_files
 app/instance
 instance/users.db
 .DS_Store
+cloudflare.ini
