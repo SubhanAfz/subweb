@@ -33,27 +33,9 @@ services:
       certonly
       --dns-cloudflare
       --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini
-      -d subhan.work -d analytics.subhan.work
+      -d subhan.work
+      --expand
       --non-interactive
       --agree-tos
       --email subhanafzal125@gmail.com
-  plausible:
-    image: ghcr.io/plausible/community-edition:latest
-    container_name: plausible
-    restart: always
-    environment:
-      - BASE_URL=https://analytics.subhan.work
-    expose:
-      - "5000"
-  #server-pico_server:
-  #  image: server-pico_server
-  #  expose:
-  #    - "5000"
-  #    - "6000:6000"
-  #  ports:
-  #  depends_on:
-  #  restart: "always"
-  #    - subweb
-  #  command: python server.py
-    
-
+  
