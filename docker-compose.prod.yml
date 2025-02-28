@@ -30,7 +30,13 @@ services:
       - ./certbot/www/:/var/www/certbot
     depends_on:
       - subweb
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email subhanafzal125@gmail.com -d subhan.work --agree-tos
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email subhanafzal125@gmail.com -d subhan.work -d analytics.subhan.work --agree-tos
+  plausible:
+    image: ghcr.io/plausible/community-edition:latest
+    container_name: plausible
+    restart: always
+    expose:
+      - "5000"
   #server-pico_server:
   #  image: server-pico_server
   #  expose:
