@@ -1,10 +1,18 @@
 """Routes for the subweb application."""
 
-import os
 import requests
 
-from flask import (Blueprint, render_template, request, session, redirect,
-                   url_for, send_from_directory, abort)
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    session,
+    redirect,
+    url_for,
+    send_from_directory,
+    abort,
+    current_app,
+)
 
 from init import db
 from models import User
@@ -19,8 +27,8 @@ yt_dl_bp = Blueprint("yt_dl", __name__, url_prefix="/yt_dl")
 def index():
     """
     Render the main page with projects and user data.
-    
-    Loads projects from the JSON file, calculates public and accessible 
+
+    Loads projects from the JSON file, calculates public and accessible
     project counts, and retrieves user info if logged in.
     """
     projects = load_projects()
@@ -57,8 +65,8 @@ def index():
 def login():
     """
     Handle user login.
-    
-    On POST, validates credentials and logs in the user. On GET, 
+
+    On POST, validates credentials and logs in the user. On GET,
     renders the login page.
     """
     if request.method == "POST":
@@ -69,9 +77,7 @@ def login():
             session["sessionID"], session["username"] = user.id, username
             return redirect(url_for("main.index"))
         return render_template(
-            "login.jinja",
-            title="login",
-            error="Invalid username or password!"
+            "login.jinja", title="login", error="Invalid username or password!"
         )
     return render_template("login.jinja", title="login", error="")
 
@@ -80,8 +86,8 @@ def login():
 def signup():
     """
     Handle user signup.
-    
-    On POST, creates a new user if the username does not exist. On GET, 
+
+    On POST, creates a new user if the username does not exist. On GET,
     renders the signup page.
     """
     if request.method == "POST":
@@ -89,9 +95,7 @@ def signup():
         password = request.form["password"]
         if User.query.filter_by(username=username).first():
             return render_template(
-                "signup.jinja",
-                title="signup",
-                error="Username already exists!"
+                "signup.jinja", title="signup", error="Username already exists!"
             )
         new_user = User(username=username)
         new_user.set_password(password)
@@ -117,7 +121,7 @@ def logout():
 def download(file):
     """
     Handle file download requests.
-    
+
     Validates user session and role before allowing the download.
     """
     projects = load_projects()
@@ -133,9 +137,7 @@ def download(file):
     if logged_in and role >= project["role"]:
         try:
             return send_from_directory(
-                os.path.join("static", "download_files"),
-                file,
-                as_attachment=True
+                current_app.config["UPLOAD_FOLDER"], file, as_attachment=True
             )
         except FileNotFoundError:
             abort(404)
@@ -150,7 +152,7 @@ def change_role():
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > 99:
-            user_to_change = User.query.get(request.form["id"])
+            user_to_change = db.session.get(User, request.form["id"])
             if user_to_change:
                 user_to_change.role = request.form["role"]
                 db.session.commit()
@@ -161,15 +163,14 @@ def change_role():
 def wake():
     """
     Send a wake request to the specified service.
-    
+
     A timeout is specified to prevent hanging indefinitely.
     """
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > -1:
             resp = requests.post(
-                f"http://server-pico_server:5000/wake/{session['username']}",
-                timeout=5
+                f"http://server-pico_server:5000/wake/{session['username']}", timeout=5
             )
             if resp.ok:
                 return "OK"
@@ -184,7 +185,7 @@ def delete_user():
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > 99:
-            user_to_delete = User.query.get(request.form["id"])
+            user_to_delete = db.session.get(User, request.form["id"])
             if user_to_delete:
                 db.session.delete(user_to_delete)
                 db.session.commit()
