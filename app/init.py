@@ -1,9 +1,10 @@
 """Application factory for the subweb application."""
 
 import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from jinja2 import select_autoescape
 db = SQLAlchemy()
 
 
@@ -34,6 +35,11 @@ def create_app():
         app.root_path, "instance", "projects.json"
     )
     app.config["DISABLE_LOG_IN"] = _env_flag("DISABLE_LOG_IN")
+
+    # Ensure templates are automatically escaped, including .jinja files
+    app.jinja_env.autoescape = select_autoescape(
+        enabled_extensions=("html", "htm", "xml", "jinja"), default=True
+    )
 
     db.init_app(app)
 
