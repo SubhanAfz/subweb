@@ -1,8 +1,10 @@
 """Application factory for the subweb application."""
 
 import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from jinja2 import select_autoescape
 
 db = SQLAlchemy()
 
@@ -16,6 +18,11 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_NOTIFICATIONS"] = False
     app.config["UPLOAD_FOLDER"] = os.path.join(app.root_path, 'static', 'download_files')
     app.config["PROJECTS_JSON_FILE"] = os.path.join(app.root_path, 'instance', 'projects.json')
+
+    # Ensure templates are automatically escaped, including .jinja files
+    app.jinja_env.autoescape = select_autoescape(
+        enabled_extensions=("html", "htm", "xml", "jinja"), default=True
+    )
 
     db.init_app(app)
     from routes import api_bp, main_bp, yt_dl_bp  # pylint: disable=import-outside-toplevel
