@@ -1,6 +1,5 @@
 """Routes for the subweb application."""
 
-import os
 import requests
 
 from flask import (
@@ -155,7 +154,7 @@ def download(file):
     if logged_in and role >= project["role"]:
         try:
             return send_from_directory(
-                os.path.join("static", "download_files"), file, as_attachment=True
+                current_app.config["UPLOAD_FOLDER"], file, as_attachment=True
             )
         except FileNotFoundError:
             abort(404)
@@ -170,7 +169,7 @@ def change_role():
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > 99:
-            user_to_change = User.query.get(request.form["id"])
+            user_to_change = db.session.get(User, request.form["id"])
             if user_to_change:
                 user_to_change.role = request.form["role"]
                 db.session.commit()
@@ -203,7 +202,7 @@ def delete_user():
     if "username" in session:
         user = User.query.filter_by(username=session["username"]).first()
         if user.role > 99:
-            user_to_delete = User.query.get(request.form["id"])
+            user_to_delete = db.session.get(User, request.form["id"])
             if user_to_delete:
                 db.session.delete(user_to_delete)
                 db.session.commit()

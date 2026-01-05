@@ -13,3 +13,4 @@ app/instance
 instance/users.db
 .DS_Store
 cloudflare.ini
+.coverage
