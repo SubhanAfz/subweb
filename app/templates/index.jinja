@@ -9,7 +9,9 @@
 
     <p> Welcome to my website </p>
 
-    {%if loggedIn == false%}
+    {% if disable_log_in %}
+        <p id="error">Log in and registration are currently disabled.</p>
+    {%elif loggedIn == false%}
         <a href="/login" class="links">Login</a> | <a href="/signup" class="links">Register</a>
     {%elif loggedIn == true%}
         <b>Logged in as {{username}}</b> | <a href="/logout" class="links">Logout</a>
@@ -60,7 +62,9 @@
         {%endif%}
     </ul>
 
-    {%if loggedIn == false%}
+    {%if disable_log_in %}
+        <p id="error">Log in and registration are disabled; only public projects are visible.</p>
+    {%elif loggedIn == false%}
         <p id="error"> to view private projects you must log in! </p>
     {%elif amount_able_to_view != projects|length - public_project_count %}
         <p id="error"> some private projects are hidden! </p>

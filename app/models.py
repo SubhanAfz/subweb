@@ -20,7 +20,6 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     role = db.Column(db.Integer, nullable=False)
 
-
     def set_password(self, password):
         """
         Set the user's password by hashing the provided plain text.
@@ -29,7 +28,6 @@ class User(db.Model):
             password (str): The plain text password to hash.
         """
         self.password = generate_password_hash(password)
-
 
     def check_password(self, password):
         """

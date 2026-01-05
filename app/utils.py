@@ -4,6 +4,7 @@
 import json
 from flask import current_app
 
+
 def get_project_from_filename(filename, projects):
     """
     Retrieve a project based on its download link derived from the filename.
@@ -20,6 +21,7 @@ def get_project_from_filename(filename, projects):
         if project.get("download_link") == f"/download/{filename}":
             return project
     return None
+
 
 def load_projects():
     """
