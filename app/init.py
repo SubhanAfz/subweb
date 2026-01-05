@@ -1,14 +1,25 @@
 """Application factory for the subweb application."""
 
 import os
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from jinja2 import select_autoescape
 db = SQLAlchemy()
 
+def _env_flag(name: str, default: str = "false") -> bool:
+    """Return a boolean for the given environment variable.
+
+    Accepts only "true" (case insensitive) as True, else it is False
+    """
+
+    return os.getenv(name, default).lower() in {"true"}
 
 def create_app(test_config=None):
     """Create and configure the Flask application."""
+    # pylint: disable=import-outside-toplevel
+    from routes import api_bp, main_bp
+
     app = Flask(__name__)
 
     secret_key = (test_config or {}).get("SECRET_KEY") or os.environ.get("SECRET_KEY")
@@ -28,15 +39,9 @@ def create_app(test_config=None):
     app.secret_key = secret_key
 
     db.init_app(app)
-    from routes import (
-        api_bp,
-        main_bp,
-        yt_dl_bp,
-    )  # pylint: disable=import-outside-toplevel
 
     app.register_blueprint(api_bp)
     app.register_blueprint(main_bp)
-    app.register_blueprint(yt_dl_bp)
 
     with app.app_context():
         db.create_all()

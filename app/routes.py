@@ -20,7 +20,21 @@ from utils import get_project_from_filename, load_projects
 
 main_bp = Blueprint("main", __name__)
 api_bp = Blueprint("api", __name__)
-yt_dl_bp = Blueprint("yt_dl", __name__, url_prefix="/yt_dl")
+
+
+@main_bp.before_app_request
+def enforce_disabled_authentication():
+    """Clear sessions and block auth routes when authentication is disabled."""
+    if not current_app.config.get("DISABLE_LOG_IN", False):
+        return None
+
+    if session.keys():
+        session.clear()
+
+    if request.endpoint in {"main.login", "main.signup", "main.logout"}:
+        return redirect(url_for("main.index"))
+
+    return None
 
 
 @main_bp.route("/")
@@ -35,6 +49,7 @@ def index():
     public_project_count = sum(
         1 for project in projects.values() if not project["private"]
     )
+    disable_log_in = current_app.config.get("DISABLE_LOG_IN", False)
     logged_in = "sessionID" in session and "username" in session
     role = (
         User.query.filter_by(username=session["username"]).first().role
@@ -58,6 +73,7 @@ def index():
         role=role,
         users=users,
         amount_able_to_view=amount_able_to_view,
+        disable_log_in=disable_log_in,
     )
 
 
@@ -90,6 +106,7 @@ def signup():
     On POST, creates a new user if the username does not exist. On GET,
     renders the signup page.
     """
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
