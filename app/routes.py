@@ -21,7 +21,6 @@ from utils import get_project_from_filename, load_projects
 
 main_bp = Blueprint("main", __name__)
 api_bp = Blueprint("api", __name__)
-yt_dl_bp = Blueprint("yt_dl", __name__, url_prefix="/yt_dl")
 
 
 @main_bp.before_app_request
@@ -30,7 +29,7 @@ def enforce_disabled_authentication():
     if not current_app.config.get("DISABLE_LOG_IN", False):
         return None
 
-    if session:
+    if session.keys():
         session.clear()
 
     if request.endpoint in {"main.login", "main.signup", "main.logout"}:
@@ -87,9 +86,6 @@ def login():
     On POST, validates credentials and logs in the user. On GET,
     renders the login page.
     """
-    if current_app.config.get("DISABLE_LOG_IN", False):
-        return redirect(url_for("main.index"))
-
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -111,8 +107,6 @@ def signup():
     On POST, creates a new user if the username does not exist. On GET,
     renders the signup page.
     """
-    if current_app.config.get("DISABLE_LOG_IN", False):
-        return redirect(url_for("main.index"))
 
     if request.method == "POST":
         username = request.form["username"]

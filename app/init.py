@@ -3,17 +3,20 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from routes import (
+    api_bp,
+    main_bp,
+)
 db = SQLAlchemy()
 
 
 def _env_flag(name: str, default: str = "false") -> bool:
     """Return a boolean for the given environment variable.
 
-    Accepts truthy strings such as "1", "true", "yes", or "on" (case-insensitive).
+    Accepts only "true" (case insensitive) as True, else it is False
     """
 
-    return os.getenv(name, default).lower() in {"1", "true", "yes", "on"}
+    return os.getenv(name, default).lower() in {"true"}
 
 
 def create_app():
@@ -33,15 +36,9 @@ def create_app():
     app.config["DISABLE_LOG_IN"] = _env_flag("DISABLE_LOG_IN")
 
     db.init_app(app)
-    from routes import (
-        api_bp,
-        main_bp,
-        yt_dl_bp,
-    )  # pylint: disable=import-outside-toplevel
 
     app.register_blueprint(api_bp)
     app.register_blueprint(main_bp)
-    app.register_blueprint(yt_dl_bp)
 
     with app.app_context():
         db.create_all()
