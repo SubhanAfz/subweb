@@ -263,3 +263,48 @@ def test_get_project_from_filename_integration(app):
         )
 
     assert projects == {"download_link": "/download/public.txt"}
+
+
+def test_disabled_auth_clears_session(app, client):
+    """When DISABLE_LOG_IN is True, sessions are cleared on request."""
+    app.config["DISABLE_LOG_IN"] = True
+
+    with client.session_transaction() as sess:
+        sess["username"] = "someone"
+        sess["sessionID"] = 1
+
+    client.get("/")
+
+    with client.session_transaction() as sess:
+        assert "username" not in sess
+        assert "sessionID" not in sess
+
+
+def test_disabled_auth_redirects_login(app, client):
+    """When DISABLE_LOG_IN is True, /login redirects to index."""
+    app.config["DISABLE_LOG_IN"] = True
+
+    response = client.get("/login")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/"
+
+
+def test_disabled_auth_redirects_signup(app, client):
+    """When DISABLE_LOG_IN is True, /signup redirects to index."""
+    app.config["DISABLE_LOG_IN"] = True
+
+    response = client.get("/signup")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/"
+
+
+def test_disabled_auth_redirects_logout(app, client):
+    """When DISABLE_LOG_IN is True, /logout redirects to index."""
+    app.config["DISABLE_LOG_IN"] = True
+
+    response = client.get("/logout")
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/"

@@ -2,7 +2,7 @@
 
 import pytest
 
-from init import create_app, db
+from init import create_app, db, _env_flag
 
 
 def test_create_app_uses_provided_config(projects_file, tmp_path):
@@ -48,3 +48,26 @@ def test_create_app_uses_environment(monkeypatch, tmp_path):
 
     assert app.secret_key == "env-key"
     assert app.config["SQLALCHEMY_DATABASE_URI"].endswith("users.db")
+
+
+def test_env_flag_returns_true_for_true_value(monkeypatch):
+    """_env_flag should return True when env var is 'true'."""
+
+    monkeypatch.setenv("TEST_FLAG", "true")
+    assert _env_flag("TEST_FLAG") is True
+
+    monkeypatch.setenv("TEST_FLAG", "TRUE")
+    assert _env_flag("TEST_FLAG") is True
+
+
+def test_env_flag_returns_false_for_other_values(monkeypatch):
+    """_env_flag should return False for non-'true' values."""
+
+    monkeypatch.setenv("TEST_FLAG", "false")
+    assert _env_flag("TEST_FLAG") is False
+
+    monkeypatch.setenv("TEST_FLAG", "1")
+    assert _env_flag("TEST_FLAG") is False
+
+    monkeypatch.delenv("TEST_FLAG", raising=False)
+    assert _env_flag("TEST_FLAG") is False
