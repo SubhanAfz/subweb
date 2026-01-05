@@ -5,7 +5,10 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from jinja2 import select_autoescape
+
+
 db = SQLAlchemy()
+
 
 def _env_flag(name: str, default: str = "false") -> bool:
     """Return a boolean for the given environment variable.
@@ -14,6 +17,7 @@ def _env_flag(name: str, default: str = "false") -> bool:
     """
 
     return os.getenv(name, default).lower() in {"true"}
+
 
 def create_app(test_config=None):
     """Create and configure the Flask application."""
@@ -37,6 +41,11 @@ def create_app(test_config=None):
     if test_config:
         app.config.update(test_config)
     app.secret_key = secret_key
+
+    app.jinja_env.autoescape = select_autoescape(
+        enabled_extensions=("html", "htm", "xml", "jinja"), default=True
+    )
+
 
     db.init_app(app)
 

@@ -9,14 +9,15 @@ import pytest
 
 sys.path.append(str(Path(__file__).resolve().parent.parent / "app"))
 
+# pylint: disable=wrong-import-position
 from init import create_app, db
 from models import User
 
 os.environ.setdefault("SECRET_KEY", "testing-secret")
 
 
-@pytest.fixture()
-def projects_file(tmp_path):
+@pytest.fixture(name="test_projects_file")
+def _test_projects_file(tmp_path):
     """Create a temporary projects.json file for tests."""
     data = {
         "project1": {
@@ -39,39 +40,39 @@ def projects_file(tmp_path):
     return file_path
 
 
-@pytest.fixture()
-def app(projects_file, tmp_path):
+@pytest.fixture(name="test_app")
+def _test_app(test_projects_file, tmp_path):
     """Return a configured Flask application for testing."""
     download_dir = tmp_path / "downloads"
     download_dir.mkdir()
-    app = create_app(
+    flask_app = create_app(
         {
             "SECRET_KEY": "testing-secret",
             "TESTING": True,
             "SQLALCHEMY_DATABASE_URI": "sqlite://",
-            "PROJECTS_JSON_FILE": str(projects_file),
+            "PROJECTS_JSON_FILE": str(test_projects_file),
             "UPLOAD_FOLDER": str(download_dir),
         }
     )
-    with app.app_context():
+    with flask_app.app_context():
         db.create_all()
-        yield app
+        yield flask_app
         db.session.remove()
         db.drop_all()
 
 
-@pytest.fixture()
-def client(app):
+@pytest.fixture(name="client")
+def _client(test_app):
     """Return a test client for the Flask app."""
-    return app.test_client()
+    return test_app.test_client()
 
 
-@pytest.fixture()
-def user_factory(app):
+@pytest.fixture(name="user_factory")
+def _user_factory(test_app):
     """Factory fixture to create users with different roles."""
 
     def _create_user(username="user", password="password", role=0):
-        with app.app_context():
+        with test_app.app_context():
             user = User(username=username, role=role)
             user.set_password(password)
             db.session.add(user)

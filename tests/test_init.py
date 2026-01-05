@@ -5,7 +5,7 @@ import pytest
 from init import create_app, db, _env_flag
 
 
-def test_create_app_uses_provided_config(projects_file, tmp_path):
+def test_create_app_uses_provided_config(test_projects_file, tmp_path):
     """Ensure the factory applies a supplied configuration."""
     custom_db = "sqlite://"
     download_dir = tmp_path / "files"
@@ -15,7 +15,7 @@ def test_create_app_uses_provided_config(projects_file, tmp_path):
         {
             "SECRET_KEY": "override-key",
             "SQLALCHEMY_DATABASE_URI": custom_db,
-            "PROJECTS_JSON_FILE": str(projects_file),
+            "PROJECTS_JSON_FILE": str(test_projects_file),
             "UPLOAD_FOLDER": str(download_dir),
             "TESTING": True,
         }
@@ -23,7 +23,7 @@ def test_create_app_uses_provided_config(projects_file, tmp_path):
 
     assert app.secret_key == "override-key"
     assert app.config["SQLALCHEMY_DATABASE_URI"] == custom_db
-    assert app.config["PROJECTS_JSON_FILE"] == str(projects_file)
+    assert app.config["PROJECTS_JSON_FILE"] == str(test_projects_file)
     assert app.config["UPLOAD_FOLDER"] == str(download_dir)
 
     with app.app_context():

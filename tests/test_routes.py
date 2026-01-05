@@ -103,14 +103,14 @@ def test_logout_clears_session(client):
         assert "sessionID" not in sess
 
 
-def test_download_allows_authorized_user(app, client, user_factory):
+def test_download_allows_authorized_user(test_app, client, user_factory):
     """Authorized users can download files from the configured folder."""
     user = user_factory(username="downloader", role=1)
     with client.session_transaction() as sess:
         sess["username"] = user["username"]
         sess["sessionID"] = user["id"]
 
-    private_file = Path(app.config["UPLOAD_FOLDER"]) / "private.txt"
+    private_file = Path(test_app.config["UPLOAD_FOLDER"]) / "private.txt"
     private_file.write_text("secret data", encoding="utf-8")
 
     response = client.get("/download/private.txt")
@@ -119,7 +119,7 @@ def test_download_allows_authorized_user(app, client, user_factory):
     assert response.data == b"secret data"
 
 
-def test_download_handles_missing_file(app, client, user_factory, monkeypatch):
+def test_download_handles_missing_file(client, user_factory, monkeypatch):
     """Missing files should produce a 404 error when access is allowed."""
     user = user_factory(username="missing", role=1)
     with client.session_transaction() as sess:
@@ -191,7 +191,9 @@ def test_wake_authorized_user(monkeypatch, client, user_factory):
 
     called = {}
 
-    class FakeResponse:
+    class FakeResponse:  # pylint: disable=too-few-public-methods
+        """Mock response object for requests.post."""
+
         ok = True
 
     def fake_post(url, timeout):
@@ -255,9 +257,9 @@ def test_delete_user_without_admin(client, user_factory):
         assert db.session.get(User, target["id"]) is not None
 
 
-def test_get_project_from_filename_integration(app):
+def test_get_project_from_filename_integration(test_app):
     """Integration check for matching projects through filename."""
-    with app.app_context():
+    with test_app.app_context():
         projects = get_project_from_filename(
             "public.txt", {"public": {"download_link": "/download/public.txt"}}
         )
@@ -265,9 +267,9 @@ def test_get_project_from_filename_integration(app):
     assert projects == {"download_link": "/download/public.txt"}
 
 
-def test_disabled_auth_clears_session(app, client):
+def test_disabled_auth_clears_session(test_app, client):
     """When DISABLE_LOG_IN is True, sessions are cleared on request."""
-    app.config["DISABLE_LOG_IN"] = True
+    test_app.config["DISABLE_LOG_IN"] = True
 
     with client.session_transaction() as sess:
         sess["username"] = "someone"
@@ -280,9 +282,9 @@ def test_disabled_auth_clears_session(app, client):
         assert "sessionID" not in sess
 
 
-def test_disabled_auth_redirects_login(app, client):
+def test_disabled_auth_redirects_login(test_app, client):
     """When DISABLE_LOG_IN is True, /login redirects to index."""
-    app.config["DISABLE_LOG_IN"] = True
+    test_app.config["DISABLE_LOG_IN"] = True
 
     response = client.get("/login")
 
@@ -290,9 +292,9 @@ def test_disabled_auth_redirects_login(app, client):
     assert response.headers["Location"] == "/"
 
 
-def test_disabled_auth_redirects_signup(app, client):
+def test_disabled_auth_redirects_signup(test_app, client):
     """When DISABLE_LOG_IN is True, /signup redirects to index."""
-    app.config["DISABLE_LOG_IN"] = True
+    test_app.config["DISABLE_LOG_IN"] = True
 
     response = client.get("/signup")
 
@@ -300,9 +302,9 @@ def test_disabled_auth_redirects_signup(app, client):
     assert response.headers["Location"] == "/"
 
 
-def test_disabled_auth_redirects_logout(app, client):
+def test_disabled_auth_redirects_logout(test_app, client):
     """When DISABLE_LOG_IN is True, /logout redirects to index."""
-    app.config["DISABLE_LOG_IN"] = True
+    test_app.config["DISABLE_LOG_IN"] = True
 
     response = client.get("/logout")
 

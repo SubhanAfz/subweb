@@ -4,9 +4,9 @@ import importlib
 import sys
 
 
-def test_run_invokes_flask_run(monkeypatch, app):
+def test_run_invokes_flask_run(monkeypatch, test_app):
     """The run helper should delegate to Flask's run method."""
-    monkeypatch.setattr("init.create_app", lambda: app)
+    monkeypatch.setattr("init.create_app", lambda: test_app)
     sys.modules.pop("main", None)
     main = importlib.import_module("main")
 
