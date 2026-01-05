@@ -12,6 +12,11 @@ a{
     color: #FFFFFFFF;
 }
 
+.links{
+    text-decoration: underline dotted;
+    text-decoration-color: gray;
+}
+
 .links:hover{
     color:#404040;
 }
