@@ -46,7 +46,6 @@ def create_app(test_config=None):
         enabled_extensions=("html", "htm", "xml", "jinja"), default=True
     )
 
-
     db.init_app(app)
 
     app.register_blueprint(api_bp)
