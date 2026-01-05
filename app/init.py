@@ -3,10 +3,7 @@
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from routes import (
-    api_bp,
-    main_bp,
-)
+
 db = SQLAlchemy()
 
 
@@ -21,6 +18,9 @@ def _env_flag(name: str, default: str = "false") -> bool:
 
 def create_app():
     """Create and configure the Flask application."""
+    # pylint: disable=import-outside-toplevel
+    from routes import api_bp, main_bp
+
     app = Flask(__name__)
 
     # Initialise configuration variables
