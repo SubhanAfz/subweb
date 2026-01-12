@@ -36,6 +36,7 @@ def create_app(test_config=None):
         "UPLOAD_FOLDER": os.path.join(app.root_path, "static", "download_files"),
         "PROJECTS_JSON_FILE": os.path.join(app.root_path, "instance", "projects.json"),
         "SQLALCHEMY_SESSION_OPTIONS": {"expire_on_commit": False},
+        "DISABLE_LOG_IN": _env_flag("DISABLE_LOG_IN")
     }
     app.config.update(default_config)
     if test_config:
