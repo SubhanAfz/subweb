@@ -10,31 +10,32 @@ services:
     restart: "always"
     env_file:
       - .env
-  nginx:
-    image: nginx
-    volumes:
-      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf
-      - ./certbot/conf/:/etc/letsencrypt
+  caddy:
+    build: ./caddy
+    image: local/caddy-cloudflare:2.11.7
+    restart: unless-stopped
+    env_file:
+      - ./caddy/cloudflare.env
     ports:
       - "80:80"
       - "443:443"
-    depends_on:
-      - subweb
-    restart: "always"
-  certbot:
-    image: certbot/dns-cloudflare
-    container_name: certbot
     volumes:
-      - ./certbot/conf/:/etc/letsencrypt
-      - ./cloudflare.ini:/etc/letsencrypt/cloudflare.ini:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - subweb
-    command: >
-      certonly
-      --dns-cloudflare
-      --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini
-      -d subhan.work
-      --expand
-      --non-interactive
-      --agree-tos
-      --email subhanafzal125@gmail.com
+    networks:
+      default:
+        # Preserve the existing FRP destination during the nginx migration.
+        aliases:
+          - subweb-nginx-1
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  caddy_data:
+  caddy_config:
