@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Create validation-only environment
         run: |
-          printf 'CLOUDFLARE_API_TOKEN=validation-only-not-a-real-token\n' > caddy/cloudflare.env
+          printf 'CLOUDFLARE_API_TOKEN=validation-only-not-a-real-token-00000000\n' > caddy/cloudflare.env
           touch .env
       - name: Validate Compose
         run: docker compose -f docker-compose.prod.yml config --quiet
