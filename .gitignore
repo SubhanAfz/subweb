@@ -14,3 +14,8 @@ instance/users.db
 .DS_Store
 cloudflare.ini
 .coverage
+# Local TLS credentials and migration backups
+caddy/cloudflare.env
+cloudflare.ini
+*.before-cert-renewal
+crontab.before-systemd-renewal

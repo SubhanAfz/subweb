@@ -1,0 +1,30 @@
+name: Validate Caddy deployment
+
+on:
+  pull_request:
+    paths:
+      - 'caddy/**'
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/caddy.yml'
+  push:
+    branches: [master]
+    paths:
+      - 'caddy/**'
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/caddy.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create validation-only environment
+        run: |
+          printf 'CLOUDFLARE_API_TOKEN=validation-only-not-a-real-token\n' > caddy/cloudflare.env
+          touch .env
+      - name: Validate Compose
+        run: docker compose -f docker-compose.prod.yml config --quiet
+      - name: Build Caddy with the Cloudflare DNS module
+        run: docker compose -f docker-compose.prod.yml build caddy
+      - name: Validate Caddy configuration
+        run: docker compose -f docker-compose.prod.yml run --rm --no-deps caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

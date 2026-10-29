@@ -6,6 +6,9 @@ on:
         paths:
             - "app/**"
             - "nginx/**"
+            - "caddy/**"
+            - "docker-compose.prod.yml"
+            - ".github/workflows/build.yml"
 
 
 
@@ -34,9 +37,11 @@ jobs:
       - name: Deploy to Web Server
         run: |
             ssh -o "StrictHostKeyChecking=no" ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}} "
+                set -eu
                 cd ~/subweb
-                git pull
-                docker compose -f docker-compose.prod.yml down
-                docker compose -f docker-compose.prod.yml pull 
-                docker compose -f docker-compose.prod.yml up -d
+                git fetch origin master
+                git switch master
+                git pull --ff-only origin master
+                docker compose -f docker-compose.prod.yml pull --ignore-buildable
+                docker compose -f docker-compose.prod.yml up -d --build --remove-orphans
             "
